@@ -95,8 +95,21 @@ const MentalHealthHub = () => {
     loadData();
   }, []);
 
+  const saveToLocalStorage = (key, data) => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  const loadFromLocalStorage = (key, defaultValue = []) => {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  };
+
   const loadData = async () => {
-    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+    const API_BASE = '';
     try {
       const [postsRes, statsRes, appointmentsRes] = await Promise.all([
         fetch(`${API_BASE}/api/community/posts`).then(r => r.json()).catch(() => ({ success: false })),
@@ -109,6 +122,43 @@ const MentalHealthHub = () => {
       if (appointmentsRes && appointmentsRes.success) setAppointments(appointmentsRes.appointments || []);
     } catch (error) {
       console.log('Initializing new data (fetch failed)', error);
+      // Load from localStorage
+      setCommunityPosts(loadFromLocalStorage('communityPosts', []));
+      setStats(loadFromLocalStorage('stats', { totalAppointments: 0, activeCommunityMembers: 0, resourcesAccessed: 0 }));
+      setAppointments(loadFromLocalStorage('appointments', []));
+      setJournalEntries(loadFromLocalStorage('journalEntries', []));
+      setProgressTracking(loadFromLocalStorage('progressTracking', { entries: [], streaks: 0 }));
+    }
+  };
+
+  // Save to localStorage when data changes
+  useEffect(() => {
+    saveToLocalStorage('appointments', appointments);
+  }, [appointments]);
+
+  useEffect(() => {
+    saveToLocalStorage('communityPosts', communityPosts);
+  }, [communityPosts]);
+
+  useEffect(() => {
+    saveToLocalStorage('stats', stats);
+  }, [stats]);
+
+  useEffect(() => {
+    saveToLocalStorage('journalEntries', journalEntries);
+  }, [journalEntries]);
+
+  useEffect(() => {
+    saveToLocalStorage('progressTracking', progressTracking);
+  }, [progressTracking]);
+
+  const fetchStats = async () => {
+    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+    try {
+      const statsRes = await fetch(`${API_BASE}/api/stats`).then(r => r.json()).catch(() => ({ success: false }));
+      if (statsRes && statsRes.success) setStats({ totalAppointments: statsRes.stats?.total_appointments || 0, activeCommunityMembers: statsRes.stats?.active_users || 0, resourcesAccessed: 0 });
+    } catch (error) {
+      console.log('Error fetching stats', error);
     }
   };
 
@@ -524,7 +574,7 @@ const MentalHealthHub = () => {
       return;
     }
 
-    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+    const API_BASE = '';
 
     const payload = { ...bookingFormData };
 
@@ -537,7 +587,7 @@ const MentalHealthHub = () => {
       const data = await res.json();
       if (data.success) {
         setAppointments(prev => [data.appointment, ...prev]);
-        setStats(prev => ({ ...prev, totalAppointments: prev.totalAppointments + 1 }));
+        fetchStats();
       } else {
         // fallback - add locally
         const newAppointment = { id: Date.now(), ...bookingFormData, status: 'pending', createdAt: new Date().toISOString() };
@@ -559,7 +609,7 @@ const MentalHealthHub = () => {
   const handleCommunityPost = async () => {
     if (!newPost.trim()) return;
 
-    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+    const API_BASE = '';
     try {
       const res = await fetch(`${API_BASE}/api/community/posts`, {
         method: 'POST',
@@ -586,7 +636,7 @@ const MentalHealthHub = () => {
   };
 
   const handleLikePost = async (postId) => {
-    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+    const API_BASE = '';
     try {
       const res = await fetch(`${API_BASE}/api/community/posts/${postId}/like`, { method: 'POST' });
       const data = await res.json();
