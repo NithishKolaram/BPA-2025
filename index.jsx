@@ -27,7 +27,7 @@ const MentalHealthHub = () => {
   const [newPost, setNewPost] = useState('');
   const [postFilter, setPostFilter] = useState('all');
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
-  const [stats, setStats] = useState({ totalAppointments: 0, activeCommunityMembers: 0, resourcesAccessed: 0 });
+  const [stats, setStats] = useState({ totalAppointments: 6, activeCommunityMembers: 7, resourcesAccessed: 9 });
   const [blogPosts] = useState([
     {
       id: 1,
