@@ -12,6 +12,10 @@ const MentalHealthHub = () => {
   const [journalMood, setJournalMood] = useState('neutral');
   const [meditationTime, setMeditationTime] = useState(0);
   const [progressTracking, setProgressTracking] = useState({ entries: [], streaks: 0 });
+  const [symptomInput, setSymptomInput] = useState('');
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [matchedDisorders, setMatchedDisorders] = useState([]);
+  const [showSymptomButtons, setShowSymptomButtons] = useState(false);
   const [bookingFormData, setBookingFormData] = useState({
     name: '',
     email: '',
@@ -26,6 +30,7 @@ const MentalHealthHub = () => {
   const [communityPosts, setCommunityPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
   const [postFilter, setPostFilter] = useState('all');
+  const [blogCategoryFilter, setBlogCategoryFilter] = useState('all');
   const [showResourcesPanel, setShowResourcesPanel] = useState(false);
   const [stats, setStats] = useState({ totalAppointments: 6, activeCommunityMembers: 7, resourcesAccessed: 9 });
   const [blogPosts] = useState([
@@ -33,7 +38,7 @@ const MentalHealthHub = () => {
       id: 1,
       title: 'Understanding the Mind-Body Connection',
       excerpt: 'Explore how physical health impacts mental wellbeing and vice versa.',
-      date: 'Dec 10, 2025',
+      date: 'Dec 10, 2026',
       author: 'Dr. Sarah Johnson',
       readTime: '5 min',
       category: 'Self-Care',
@@ -43,7 +48,7 @@ const MentalHealthHub = () => {
       id: 2,
       title: '5 Daily Habits for Better Mental Health',
       excerpt: 'Simple, evidence-based practices you can incorporate into your routine.',
-      date: 'Dec 8, 2025',
+      date: 'Dec 8, 2026',
       author: 'Michael Chen, LCSW',
       readTime: '4 min',
       category: 'Self-Care',
@@ -53,7 +58,7 @@ const MentalHealthHub = () => {
       id: 3,
       title: 'Breaking the Stigma: Why We Need to Talk',
       excerpt: 'The importance of open conversations about mental health in our communities.',
-      date: 'Dec 5, 2025',
+      date: 'Dec 5, 2026',
       author: 'Dr. Emily Rodriguez',
       readTime: '6 min',
       category: 'Awareness',
@@ -63,7 +68,7 @@ const MentalHealthHub = () => {
       id: 4,
       title: 'Stress Management Techniques for Busy Professionals',
       excerpt: 'Practical strategies to manage stress in your workplace and personal life.',
-      date: 'Dec 1, 2025',
+      date: 'Dec 1, 2026',
       author: 'Dr. James Wilson',
       readTime: '7 min',
       category: 'Stress Management',
@@ -73,7 +78,7 @@ const MentalHealthHub = () => {
       id: 5,
       title: 'Anxiety Coping Strategies That Work',
       excerpt: 'Evidence-based techniques to help manage anxiety symptoms in the moment.',
-      date: 'Nov 28, 2025',
+      date: 'Nov 28, 2026',
       author: 'Dr. Linda Martinez',
       readTime: '5 min',
       category: 'Anxiety',
@@ -83,7 +88,7 @@ const MentalHealthHub = () => {
       id: 6,
       title: 'Building Resilience: A Path to Mental Strength',
       excerpt: 'Learn how to develop emotional resilience and bounce back from challenges.',
-      date: 'Nov 25, 2025',
+      date: 'Nov 25, 2026',
       author: 'Dr. Robert Chen',
       readTime: '8 min',
       category: 'Resilience',
@@ -160,6 +165,49 @@ const MentalHealthHub = () => {
     } catch (error) {
       console.log('Error fetching stats', error);
     }
+  };
+
+  const commonSymptoms = [
+    'Anxiety', 'Depression', 'Insomnia', 'Fatigue', 'Irritability',
+    'Difficulty Concentrating', 'Panic Attacks', 'Flashbacks', 'Nightmares',
+    'Mood Swings', 'Restlessness', 'Sadness', 'Racing Thoughts', 'Avoidance',
+    'Obsessive Thoughts', 'Compulsive Behaviors', 'Fear of Judgment',
+    'Social Withdrawal', 'Loss of Interest', 'Sleep Problems', 'Muscle Tension',
+    'Rapid Heartbeat', 'Shortness of Breath', 'Dizziness', 'Emotional Numbness'
+  ];
+
+  const matchSymptomsToDisorders = (symptomsArray) => {
+    if (!symptomsArray || symptomsArray.length === 0) {
+      setMatchedDisorders([]);
+      return;
+    }
+
+    const userSymptoms = symptomsArray.map(s => s.toLowerCase());
+    const scoredDisorders = disorders.map(disorder => {
+      const disorderSymptoms = disorder.symptoms.map(s => s.toLowerCase());
+      let matchScore = 0;
+      
+      userSymptoms.forEach(userSymptom => {
+        disorderSymptoms.forEach(disorderSymptom => {
+          if (disorderSymptom.includes(userSymptom) || userSymptom.includes(disorderSymptom)) {
+            matchScore += 10;
+          }
+          const userWords = userSymptom.split(' ');
+          const disorderWords = disorderSymptom.split(' ');
+          userWords.forEach(userWord => {
+            if (disorderWords.some(dWord => dWord === userWord)) {
+              matchScore += 5;
+            }
+          });
+        });
+      });
+      
+      return { disorder, matchScore };
+    }).filter(item => item.matchScore > 0)
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, 3);
+
+    setMatchedDisorders(scoredDisorders);
   };
 
   const disorders = [
@@ -738,10 +786,162 @@ const MentalHealthHub = () => {
 
   const renderInfo = () => (
     <div className="space-y-8">
-      <div className="text-center bg-gradient-to-br from-blue-600 to-teal-600 text-white rounded-3xl p-12">
-        <Brain className="w-16 h-16 mx-auto mb-4" />
+      <div className="text-center bg-gradient-to-br from-blue-600 to-teal-600 text-white rounded-3xl p-12 shadow-3d">
+        <div className="inline-block mb-4">
+          <Brain className="w-16 h-16 mx-auto text-blue-100" />
+        </div>
         <h2 className="text-4xl font-bold mb-4">Mental Health Information Library</h2>
         <p className="text-lg text-blue-100 max-w-2xl mx-auto">Comprehensive, reliable information about mental health conditions, treatments, and coping strategies.</p>
+      </div>
+
+      {/* Symptom-Based Matching Section */}
+      <div className="relative ring-gradient rounded-3xl">
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border-2 border-indigo-200 rounded-3xl p-8 shadow-3d">
+          <h3 className="text-2xl font-bold mb-2 text-gray-900 flex items-center gap-2">
+            <Zap className="w-6 h-6 text-indigo-600" />
+            Find Conditions by Symptoms
+          </h3>
+          <p className="text-gray-600 mb-6">Click symptoms or type to discover matching mental health conditions</p>
+          
+          <div className="space-y-4">
+            {/* Selected Symptoms Tags */}
+            {selectedSymptoms.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {selectedSymptoms.map((symptom) => (
+                  <div
+                    key={symptom}
+                    className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:shadow-lg hover:opacity-90 transition-all cursor-pointer shadow-3d"
+                  >
+                    <span className="font-medium">{symptom}</span>
+                    <button
+                      onClick={() => {
+                        const updated = selectedSymptoms.filter(s => s !== symptom);
+                        setSelectedSymptoms(updated);
+                        matchSymptomsToDisorders(updated);
+                      }}
+                      className="text-white hover:text-indigo-100 transition ml-1 font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => {
+                    setSelectedSymptoms([]);
+                    setMatchedDisorders([]);
+                  }}
+                  className="text-red-600 hover:text-red-700 font-medium text-sm underline transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+            )}
+
+            {/* Text Input for Symptoms - Main Focus */}
+            <div className="bg-white rounded-2xl p-6 border-2 border-indigo-100 shadow-3d">
+              <label className="text-sm font-semibold text-gray-700 mb-3 block flex items-center gap-2">
+                <span className="inline-block w-2 h-2 bg-blue-600 rounded-full"></span>
+                Type or Click to Add Symptoms
+              </label>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="e.g., anxiety, sleep issues..."
+                  value={symptomInput}
+                  onChange={(e) => setSymptomInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && symptomInput.trim()) {
+                      const symptom = symptomInput.trim().charAt(0).toUpperCase() + symptomInput.trim().slice(1);
+                      if (!selectedSymptoms.includes(symptom)) {
+                        const updated = [...selectedSymptoms, symptom];
+                        setSelectedSymptoms(updated);
+                        matchSymptomsToDisorders(updated);
+                      }
+                      setSymptomInput('');
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 rounded-lg border-2 border-gray-300 focus:border-blue-600 focus:outline-none transition-colors text-gray-900 placeholder-gray-500 text-sm"
+                />
+                <button
+                  onClick={() => setShowSymptomButtons(!showSymptomButtons)}
+                  className="px-4 py-2 bg-gradient-to-br from-indigo-500 to-blue-500 text-white rounded-lg hover:shadow-md transition-all font-medium text-sm"
+                >
+                  {showSymptomButtons ? 'Hide' : 'Show'} Suggestions
+                </button>
+              </div>
+
+              {/* Collapsible Symptoms Grid */}
+              {showSymptomButtons && (
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-600">Click any suggestion to add it</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {commonSymptoms
+                      .filter(symptom => !selectedSymptoms.includes(symptom))
+                      .slice(0, 12)
+                      .map((symptom) => (
+                        <button
+                          key={symptom}
+                          onClick={() => {
+                            const updated = [...selectedSymptoms, symptom];
+                            setSelectedSymptoms(updated);
+                            matchSymptomsToDisorders(updated);
+                          }}
+                          className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-900 text-xs font-medium transition-colors border border-indigo-200 hover:border-indigo-400"
+                        >
+                          {symptom}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Results with 3D Cards */}
+            {matchedDisorders.length > 0 && (
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-300 shadow-3d">
+                <h4 className="font-bold text-gray-900 mb-6 text-lg flex items-center gap-3">
+                  <div className="inline-flex items-center justify-center w-8 h-8 bg-green-600 rounded-full">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                  </div>
+                  Most Likely Conditions ({matchedDisorders.length})
+                </h4>
+                
+                <div className="space-y-4">
+                  {matchedDisorders.map((item, idx) => {
+                    const matchPercentage = Math.min(100, Math.round((item.matchScore / 50) * 100));
+                    return (
+                      <div 
+                        key={item.disorder.id}
+                        className="bg-white rounded-xl p-4 border-l-4 border-indigo-600 hover:shadow-md hover:bg-indigo-50 transition-all cursor-pointer card-3d shadow-md"
+                        onClick={() => setSelectedDisorder(item.disorder.id)}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="inline-flex items-center justify-center w-6 h-6 bg-indigo-600 text-white text-xs font-bold rounded-full">#{idx + 1}</span>
+                              <p className="font-bold text-gray-900 text-lg">{item.disorder.name}</p>
+                            </div>
+                            <p className="text-sm text-gray-600">{item.disorder.stats}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-3xl font-bold bg-gradient-to-br from-indigo-600 to-blue-600 bg-clip-text text-transparent">{matchPercentage}%</div>
+                            <div className="text-xs text-gray-500 font-semibold">Match</div>
+                          </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                          <div 
+                            className="bg-gradient-to-r from-indigo-600 to-blue-600 h-3 rounded-full transition-all"
+                            style={{ width: `${matchPercentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -761,13 +961,13 @@ const MentalHealthHub = () => {
         {disorders.filter(d => 
           d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           d.description.toLowerCase().includes(searchQuery.toLowerCase())
-        ).map((disorder) => {
+        ).slice(0, searchQuery ? 30 : 6).map((disorder) => {
           const Icon = disorder.icon;
           const isSelected = selectedDisorder === disorder.id;
           return (
             <div 
               key={disorder.id} 
-              className={`${disorder.color} border-2 rounded-2xl p-6 cursor-pointer hover:shadow-lg transition ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+              className={`${disorder.color} border-2 rounded-2xl p-6 cursor-pointer transition-all duration-300 shadow-3d hover:shadow-lg ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
               onClick={() => setSelectedDisorder(disorder.id === selectedDisorder ? null : disorder.id)}
             >
               <div className="flex items-start justify-between mb-4">
@@ -838,6 +1038,13 @@ const MentalHealthHub = () => {
           );
         })}
       </div>
+
+      {!searchQuery && disorders.length > 6 && (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Showing 6 of {disorders.length} conditions</p>
+          <p className="text-gray-500 text-sm mt-2">Use the search bar or symptom matcher above to explore more</p>
+        </div>
+      )}
 
       {searchQuery && disorders.filter(d => 
         d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1317,15 +1524,22 @@ const MentalHealthHub = () => {
       <div>
         <h3 className="text-2xl font-bold mb-6 text-gray-900">Browse by Category</h3>
         <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <button 
+            onClick={() => setBlogCategoryFilter('all')}
+            className={`px-4 py-2 rounded-lg font-semibold transition ${blogCategoryFilter === 'all' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+            All Articles
+          </button>
           {[
-            { name: 'Wellness', color: 'bg-green-100 text-green-700' },
             { name: 'Self-Care', color: 'bg-blue-100 text-blue-700' },
             { name: 'Awareness', color: 'bg-pink-100 text-pink-700' },
             { name: 'Stress Management', color: 'bg-yellow-100 text-yellow-700' },
             { name: 'Anxiety', color: 'bg-purple-100 text-purple-700' },
             { name: 'Resilience', color: 'bg-teal-100 text-teal-700' }
           ].map(cat => (
-            <button key={cat.name} className={`${cat.color} px-4 py-2 rounded-lg font-semibold hover:shadow-md transition`}>
+            <button 
+              key={cat.name} 
+              onClick={() => setBlogCategoryFilter(cat.name)}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${blogCategoryFilter === cat.name ? 'bg-indigo-600 text-white shadow-lg' : cat.color + ' hover:opacity-80'}`}>
               {cat.name}
             </button>
           ))}
@@ -1336,8 +1550,8 @@ const MentalHealthHub = () => {
       <div>
         <h3 className="text-2xl font-bold mb-6 text-gray-900">Latest Articles</h3>
         <div className="grid md:grid-cols-2 gap-6">
-          {blogPosts.slice(1).map((post) => (
-            <div key={post.id} className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition">
+          {blogPosts.slice(1).filter(post => blogCategoryFilter === 'all' || post.category === blogCategoryFilter).map((post) => (
+            <div key={post.id} className="bg-white border-2 border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition">
               <div className="p-6">
                 <div className="mb-3">
                   <span className="text-xs font-bold px-3 py-1 bg-gray-200 text-gray-700 rounded-full">{post.category}</span>
@@ -1537,7 +1751,7 @@ const MentalHealthHub = () => {
             </div>
           </div>
           <div className="border-t border-slate-700 pt-8 text-center text-slate-400">
-            <p>© 2025 MindCare Hub. All rights reserved. | Disclaimer: Not a substitute for professional medical advice.</p>
+            <p>© 2026 MindCare Hub. All rights reserved. | Disclaimer: Not a substitute for professional medical advice.</p>
           </div>
         </div>
       </footer>

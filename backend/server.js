@@ -219,6 +219,11 @@ app.get('/api/counselors/available', async (req, res) => {
   }
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Backend server is running' });
+});
+
 // Simple health check
 app.get('/api/ping', (req, res) => {
   res.json({ success: true, message: 'pong' });

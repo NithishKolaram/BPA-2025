@@ -13,3 +13,130 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
+/* 3D and Ring Effects */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-ring {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+  }
+  50% { 
+    box-shadow: 0 0 0 15px rgba(99, 102, 241, 0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(99, 102, 241, 0.5); }
+  50% { text-shadow: 0 0 20px rgba(99, 102, 241, 0.8); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+.rotate-animation {
+  animation: rotate-slow 20s linear infinite;
+}
+
+.pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+.glow-text {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-3d {
+  perspective: 1000px;
+  transition: transform 0.3s ease;
+}
+
+.card-3d:hover {
+  transform: rotateY(5deg) rotateX(-5deg);
+}
+
+.shadow-3d {
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 0 1px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.ring-gradient {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(59, 130, 246, 0.2) 50%, rgba(34, 197, 94, 0.2) 100%);
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-in {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3D Shapes and Visual Elements */
+@keyframes float-smooth {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+@keyframes orbit {
+  0% { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+}
+
+@keyframes cube-rotate {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.floating-shape {
+  animation: float-smooth 4s ease-in-out infinite;
+}
+
+.orbiting {
+  animation: orbit 8s linear infinite;
+}
+
+.cube-3d {
+  animation: cube-rotate 10s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.shimmer-effect {
+  animation: shimmer 2s ease-in-out infinite;
+}
